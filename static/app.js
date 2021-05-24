@@ -1,64 +1,155 @@
 // Use the D3 library to read in samples.json.
-
-// 
+init();
 
 d3.json("static/samples.json").then((incomingData) => {
-    console.log(incomingData[0]);
     var data = incomingData;
-//storing each array value as a variable to access later -- not sure if this is correct
-    var names1  = data.names
-    var metadata1 = data.metadata
-    var samples1 = data.samples
 
-    console.log(samples1);
+    var names  = data.names;
+    var metadata = data.metadata;
+    var samples = data.samples;
+
+    console.log(names);
+    console.log(metadata);
+    console.log(samples);
+
+    var layout = {
+        margin: {
+          l: 100,
+          r: 100,
+          t: 100,
+          b: 100
+        }
+      };
+});
+
+function demographicInfo() {
     
-    samples1.length
+    var id = d3.select("#selDataset").property("value");
+
+    demo = metadata.find(element => element = id);
+
+    console.log(demo);
+
+    d3.select("#sample-metadata").append("h3").text(demo);
+
+};
+
+
+function init() {
+
+    names.forEach(function(Append) {
+            var option = d3.select("#selDataset");
+            option.append("option").text(Append);
+        }); 
+
+    var trace = {
+        x: topTenRev.map(object => object.sample_values),
+        y: topTenRev.map(object => object.otu_ids),
+        text: topTenRev.map(object => object.otu_labels),
+        name: "Top 10 OTUs",
+        type: "bar",
+        orientation: "h"
+    };
     
-    //trying to get first element of each samples item ie. get the id value and then store it so I can then append each as an option in the dropdown 
-    function printID(id) {
-        console.log(id);
-    }
+    var data = [trace];
+    
+    var layout = {
+        margin: {
+            l: 100,
+            r: 100,
+            t: 100,
+            b: 100
+        }
+    };
+    
+    Plotly.newPlot("bar", data, layout);
+};
 
-    for (var i = 0; i <= samples1.length; i++) {
-        printID(samples1[i])
-    }
 
-    function optionChanged(element) {
-        //fill with the samples ids list, yes need to be within the script line and within <option/> could probably append every single id as an option and then take the selected one and run it through the table code 
-    }
 
-    // we need to sort specific arrays based on their ids and then display them in the table, we just want top 10 sample_values per id
-    samples1.sort(function(a, b) {
-        return parseFloat(b.sample_values) - parseFloat(a.sample_values);
-    });
+var selector = d3.select("#selDataset").on("change", optionChanged)
 
-    samples1 = samples1.slice(0, 10);
 
-    samples1 = samples1.reverse();
 
-    console.log(samples1);
+function optionChanged(incomingData) {
+    demographicInfo(incomingData);
+    barPlot(incomingData);
+    // bubblePlot(incomingData);
+    
+};
+
+function barPlot() {
+        // we need to sort specific arrays based on their ids and then display them in the table, we just want top 10 sample_values per id
+    
+    var topTen = samples.sort((a, b) =>
+        parseFloat(b.sample_values) - parseFloat(a.sample_values));
+    console.log(topTen);
+    
+    var topTenSlice = topTen.slice(0, 10);
+    console.log(topTenSlice);
+
+    var topTenRev = topTenSlice.reverse();
+
+    console.log(topTenRev);
+    
+   // Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
+
+    var trace1 = {
+        x: topTenRev.map(object => object.sample_values),
+        y: topTenRev.map(object => object.otu_ids),
+        text: topTenRev.map(object => object.otu_labels),
+        name: "Top 10 OTUs",
+        type: "bar",
+        orientation: "h"
+    };
+
+    var data_1 = [trace1];
+
+    var layout_1 = {
+        margin: {
+          l: 100,
+          r: 100,
+          t: 100,
+          b: 100
+        }
+      };
 
     
-// Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
+    // Use sample_values as the values for the bar chart
+    // Use otu_ids as the labels for the bar chart.
+    // Use otu_labels as the hovertext for the chart.
 
+    updatePlotly(data);
+};
 
-// Use sample_values as the values for the bar chart.
-
-
-// Use otu_ids as the labels for the bar chart.
-
-
-// Use otu_labels as the hovertext for the chart.
-
-
-
-
-
+function updatePlotly(newdata) {
+    Plotly.restyle("bar", [newdata], layout);
+}
 
 
 // Create a bubble chart that displays each sample.
 
-
+// var trace2 = {
+//     x: samples1.map(object => object.otu_ids),
+//     y: samples1.map(object => object.sample_values),
+//     mode: 'markers',
+//     marker: {
+//         color: samples1.map(object => object.otu_ids),
+//         size: samples1.map(object => object.sample_values)
+//       },
+//     text: samples1.map(object => object.otu_labels)
+//   };
+  
+//   var data_2 = [trace2];
+  
+//   var layout_2 = {
+//     title: 'Marker Size',
+//     showlegend: false,
+//     height: 600,
+//     width: 600
+//   };
+  
+//   Plotly.newPlot('myDiv', data_2, layout_2);
 
 // Use otu_ids for the x values.
 
@@ -74,6 +165,16 @@ d3.json("static/samples.json").then((incomingData) => {
 
 // Use otu_labels for the text values.
 
+
+
+
+
+
+
+
+
+
+
 // Display the sample metadata, i.e., an individual's demographic information.
 
 
@@ -81,5 +182,3 @@ d3.json("static/samples.json").then((incomingData) => {
 
 
 // Update all of the plots any time that a new sample is selected.
-
-});
