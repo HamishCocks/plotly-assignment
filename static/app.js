@@ -1,155 +1,271 @@
 // Use the D3 library to read in samples.json.
+
+
 init();
 
-d3.json("static/samples.json").then((incomingData) => {
-    var data = incomingData;
-
-    var names  = data.names;
-    var metadata = data.metadata;
-    var samples = data.samples;
-
-    console.log(names);
-    console.log(metadata);
-    console.log(samples);
-
-    var layout = {
-        margin: {
-          l: 100,
-          r: 100,
-          t: 100,
-          b: 100
-        }
-      };
-});
-
-function demographicInfo() {
-    
-    var id = d3.select("#selDataset").property("value");
-
-    demo = metadata.find(element => element = id);
-
-    console.log(demo);
-
-    d3.select("#sample-metadata").append("h3").text(demo);
-
-};
-
-
 function init() {
+    d3.json("static/samples.json").then((incomingData) => {
+        
+        var data = incomingData;
+    
+        var names  = data.names;   
 
-    names.forEach(function(Append) {
+        names.forEach(function(Append) {
             var option = d3.select("#selDataset");
             option.append("option").text(Append);
         }); 
 
-    var trace = {
-        x: topTenRev.map(object => object.sample_values),
-        y: topTenRev.map(object => object.otu_ids),
-        text: topTenRev.map(object => object.otu_labels),
-        name: "Top 10 OTUs",
-        type: "bar",
-        orientation: "h"
-    };
-    
-    var data = [trace];
-    
-    var layout = {
-        margin: {
-            l: 100,
-            r: 100,
-            t: 100,
-            b: 100
-        }
-    };
-    
-    Plotly.newPlot("bar", data, layout);
+        var metadata = data.metadata;
+
+        console.log(metadata);
+
+        var sel_valuexx = 940
+
+        console.log(sel_valuexx);
+
+        var demoArray = metadata.find(o => o.id === sel_valuexx);
+
+        console.log(demoArray);
+
+        d3.select("#sample-metadata").html("");
+
+        Object.entries(demoArray).forEach(([key, value]) => {
+            d3.select("#sample-metadata").append("h5").text(`${key}: ${value}`);
+        });
+
+        var sel_value = "940";
+
+        var samples = data.samples;
+
+        var idArr = samples.filter(sample => sample.id === sel_value);
+        
+        var top_otu_IDs = idArr[0].otu_ids.slice(0, 10);
+
+        console.log(top_otu_IDs);
+
+        var topValues = idArr[0].sample_values.slice(0, 10).reverse();
+
+        console.log(topValues);
+
+        var topLabels = idArr[0].otu_labels.slice(0, 10).reverse();
+
+        console.log(topLabels);
+
+        var yticks = top_otu_IDs.map(otuID => `OTU ${otuID}`).reverse();
+        
+        // Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
+
+        var trace1 = {
+            type: "bar",
+            x: topValues,
+            y: yticks,
+            text: topLabels,
+            orientation: "h"
+        };
+
+        var data_1 = [trace1];
+
+        var layout_1 = {
+            title: "Top 10 OTUs",
+            margin: { t: 30, l: 150 }
+        };
+
+        Plotly.newPlot("bar", data_1, layout_1);
+
+
+
+        var top_otu_IDs1 = idArr[0].otu_ids;
+
+        console.log(top_otu_IDs1);
+
+        var topValues1 = idArr[0].sample_values;
+
+        console.log(topValues1);
+
+        var topLabels1 = idArr[0].otu_labels;
+
+        console.log(topLabels1);
+
+        var yticks1 = top_otu_IDs1.map(otuID => otuID);
+
+        var trace2 = {
+            x: yticks1,
+            y: topValues1,
+            mode: 'markers',
+            marker: {
+                color: yticks1,
+                size: topValues1
+            },
+            text: topLabels1
+        };
+        
+        var data_2 = [trace2];
+        
+        var layout_2 = {
+            title: 'SAMPLE SIZE',
+            xaxis: {
+                title:'OTU IDs',
+                autorange: true,
+            },
+            showlegend: false,
+            height: 600,
+            width: 1500
+        };
+
+        Plotly.newPlot('bubble', data_2, layout_2);
+    });
 };
 
 
 
-var selector = d3.select("#selDataset").on("change", optionChanged)
-
+var selector = d3.selectAll("#selDataset").on("change", optionChanged);
 
 
 function optionChanged(incomingData) {
+
     demographicInfo(incomingData);
-    barPlot(incomingData);
-    // bubblePlot(incomingData);
+    buildPlot(incomingData);
     
 };
 
-function barPlot() {
+function unpack(rows, index) {
+    return rows.map(function(row) {
+      return row[index];
+    });
+};
+
+function demographicInfo() {
+    d3.json("static/samples.json").then((incomingData) => {
+        
+        var data = incomingData;
+
+        console.log(data);
+
+        var metadata = data.metadata;
+
+        console.log(metadata);
+
+        var sel_value = parseInt(d3.select("#selDataset").property("value"));
+
+        console.log(sel_value);
+
+        var demoArray = metadata.find(o => o.id === sel_value);
+
+        console.log(demoArray);
+
+        d3.select("#sample-metadata").html("");
+
+        Object.entries(demoArray).forEach(([key, value]) => {
+            d3.select("#sample-metadata").append("h5").text(`${key}: ${value}`);
+        });
+    });
+};
+
+
+function buildPlot() {
+    d3.json("static/samples.json").then((incomingData) => {
+
+        var sel_value = d3.select("#selDataset").property("value");    
+        
+        console.log(typeof sel_value);
+
+        var data = incomingData;
+
+        var samples = data.samples;
+
+        console.log(samples);
+        
+        var idArr = samples.filter(sample => sample.id === sel_value);
+
+        //use a filter function instead of find !!!
+
+        console.log(idArr);
+
         // we need to sort specific arrays based on their ids and then display them in the table, we just want top 10 sample_values per id
-    
-    var topTen = samples.sort((a, b) =>
-        parseFloat(b.sample_values) - parseFloat(a.sample_values));
-    console.log(topTen);
-    
-    var topTenSlice = topTen.slice(0, 10);
-    console.log(topTenSlice);
+        
+        // we need to get the id selector and then sort the sample values for that SPECIFIC id, rather than all the ids
+        
+        var top_otu_IDs = idArr[0].otu_ids.slice(0, 10);
 
-    var topTenRev = topTenSlice.reverse();
+        console.log(top_otu_IDs);
 
-    console.log(topTenRev);
-    
-   // Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
+        var topValues = idArr[0].sample_values.slice(0, 10).reverse();
 
-    var trace1 = {
-        x: topTenRev.map(object => object.sample_values),
-        y: topTenRev.map(object => object.otu_ids),
-        text: topTenRev.map(object => object.otu_labels),
-        name: "Top 10 OTUs",
-        type: "bar",
-        orientation: "h"
-    };
+        console.log(topValues);
 
-    var data_1 = [trace1];
+        var topLabels = idArr[0].otu_labels.slice(0, 10).reverse();
 
-    var layout_1 = {
-        margin: {
-          l: 100,
-          r: 100,
-          t: 100,
-          b: 100
-        }
-      };
+        console.log(topLabels);
 
-    
-    // Use sample_values as the values for the bar chart
-    // Use otu_ids as the labels for the bar chart.
-    // Use otu_labels as the hovertext for the chart.
+        var yticks = top_otu_IDs.map(otuID => `OTU ${otuID}`).reverse();
+        
+        // Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
 
-    updatePlotly(data);
+        var trace1 = {
+            type: "bar",
+            x: topValues,
+            y: yticks,
+            text: topLabels,
+            orientation: "h"
+        };
+
+        var data_1 = [trace1];
+
+        var layout_1 = {
+            title: "Top 10 OTUs",
+            margin: { t: 30, l: 150 }
+        };
+
+        Plotly.newPlot("bar", data_1, layout_1);
+
+
+
+        var top_otu_IDs1 = idArr[0].otu_ids;
+
+        console.log(top_otu_IDs1);
+
+        var topValues1 = idArr[0].sample_values;
+
+        console.log(topValues1);
+
+        var topLabels1 = idArr[0].otu_labels;
+
+        console.log(topLabels1);
+
+        var yticks1 = top_otu_IDs1.map(otuID => otuID);
+
+        var trace2 = {
+            x: yticks1,
+            y: topValues1,
+            mode: 'markers',
+            marker: {
+                color: yticks1,
+                size: topValues1
+            },
+            text: topLabels1
+        };
+        
+        var data_2 = [trace2];
+        
+        var layout_2 = {
+            title: 'SAMPLE SIZE',
+            xaxis: {
+                title:'OTU IDs',
+                autorange: true,
+            },
+            showlegend: false,
+            height: 600,
+            width: 1500
+        };
+
+        Plotly.newPlot('bubble', data_2, layout_2);
+        
+        // Use sample_values as the values for the bar chart
+        // Use otu_ids as the labels for the bar chart.
+        // Use otu_labels as the hovertext for the chart.
+    });
 };
 
-function updatePlotly(newdata) {
-    Plotly.restyle("bar", [newdata], layout);
-}
-
-
-// Create a bubble chart that displays each sample.
-
-// var trace2 = {
-//     x: samples1.map(object => object.otu_ids),
-//     y: samples1.map(object => object.sample_values),
-//     mode: 'markers',
-//     marker: {
-//         color: samples1.map(object => object.otu_ids),
-//         size: samples1.map(object => object.sample_values)
-//       },
-//     text: samples1.map(object => object.otu_labels)
-//   };
-  
-//   var data_2 = [trace2];
-  
-//   var layout_2 = {
-//     title: 'Marker Size',
-//     showlegend: false,
-//     height: 600,
-//     width: 600
-//   };
-  
-//   Plotly.newPlot('myDiv', data_2, layout_2);
 
 // Use otu_ids for the x values.
 
@@ -181,4 +297,4 @@ function updatePlotly(newdata) {
 // Display each key-value pair from the metadata JSON object somewhere on the page.
 
 
-// Update all of the plots any time that a new sample is selected.
+// Update all of the plots any time that a new sample is selected
